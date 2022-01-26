@@ -8,7 +8,10 @@ the provided `history_length`. The inverse Hessians approximate a covariance. Th
 covariances and corresponding means that define multivariate normal approximations per
 point are returned.
 """
-function fit_mvnormals(θs, ∇logpθs; kwargs...)
+function fit_mvnormals(θs, ∇logpθs; history_length, kwargs...)
+    if length(θs) < history_length
+        error("Insufficient history in trajectory.")
+    end
     Σs = lbfgs_inverse_hessians(θs, ∇logpθs; kwargs...)
     l = length(Σs)
     μs = @views muladd.(Σs, ∇logpθs[1:l], θs[1:l])

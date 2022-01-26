@@ -60,9 +60,18 @@ function multipathfinder(
 
     # run pathfinder independently from each starting point
     # TODO: allow to be parallelized
-    res = map(θ₀s) do θ₀
-        return pathfinder(logp, ∇logp, θ₀, ndraws_per_run; rng=rng, kwargs...)
-    end
+    prev_solutions = []
+    res = filter(!isnothing, map(θ₀s) do θ₀
+        try
+            return pathfinder(logp, ∇logp, θ₀, ndraws_per_run; prev_solutions=prev_solutions, rng=rng, kwargs...)
+        catch err
+            if err.msg == "Insufficient history in trajectory."
+                return nothing
+            else
+                rethrow(err)
+            end
+        end
+    end)
     qs = reduce(vcat, first.(res))
     ϕs = reduce(hcat, getindex.(res, 2))
 

@@ -32,7 +32,7 @@ function pathfinder(
     θ₀,
     ndraws;
     rng::Random.AbstractRNG=Random.default_rng(),
-    optimizer::Optim.AbstractOptimizer=DEFAULT_OPTIMIZER,
+    optimizer=DEFAULT_OPTIMIZER,
     history_length::Int=optimizer isa Optim.LBFGS ? optimizer.m : DEFAULT_HISTORY_LENGTH,
     ndraws_elbo::Int=5,
     kwargs...,
@@ -41,10 +41,8 @@ function pathfinder(
     θs, logpθs, ∇logpθs = maximize_with_trace(logp, ∇logp, θ₀, optimizer; kwargs...)
     L = length(θs) - 1
     @assert L + 1 == length(logpθs) == length(∇logpθs)
-
     # fit mv-normal distributions to trajectory
     qs = fit_mvnormals(θs, ∇logpθs; history_length=history_length)
-
     # find ELBO-maximizing distribution
     lopt, elbo, ϕ, logqϕ = maximize_elbo(rng, logp, qs[2:end], ndraws_elbo)
     @info "Optimized for $L iterations. Maximum ELBO of $(round(elbo; digits=2)) reached at iteration $lopt."
