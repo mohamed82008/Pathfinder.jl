@@ -135,6 +135,7 @@ function Base.:*(W::WoodburyPDMat, c::Real)
 end
 
 PDMats.dim(W::WoodburyPDMat) = size(W.A, 1)
+Base.size(W::WoodburyPDMat) = size(W.A)
 
 function PDMats.invquad(W::WoodburyPDMat, x::AbstractVector{T}) where {T}
     v = W.Q' * (W.UA' \ x)

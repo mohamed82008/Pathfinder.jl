@@ -16,7 +16,7 @@ function ChainRulesCore.rrule(f::TraceObjective, x)
     return v, Δ -> (NoTangent(), Δ * g)
 end
 
-function maximize_with_trace(f, ∇f, x₀, optimizer::IpoptAlg; power = 2.0, shift = 0.0, deflation_ub = 1000, deflation_radius = 0.0, prev_solutions = Any[], kwargs...)
+function maximize_with_trace(f, ∇f, x₀, optimizer::IpoptAlg; power = 2.0, shift = 0.0, deflation_ub = 1000, deflation_radius = 0.0, prev_solutions = Any[], reduce = +, kwargs...)
     _of = TraceObjective(f, ∇f)
     of = x -> -_of(x[1:end-1])
     options = IpoptOptions(; kwargs...)
@@ -28,7 +28,7 @@ function maximize_with_trace(f, ∇f, x₀, optimizer::IpoptAlg; power = 2.0, sh
         if length(prev_solutions) > 0
             d = zero(eltype(x))
             for sol in prev_solutions
-                d += (1/max(0, norm(x - sol) - deflation_radius))^power + shift
+                d = reduce(d, (1/max(0, norm(x - sol) - deflation_radius))^power + shift)
             end
             return d - y
         else

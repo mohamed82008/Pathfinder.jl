@@ -65,7 +65,7 @@ function multipathfinder(
         try
             return pathfinder(logp, ∇logp, θ₀, ndraws_per_run; prev_solutions=prev_solutions, rng=rng, kwargs...)
         catch err
-            if err.msg == "Insufficient history in trajectory."
+            if hasproperty(err, :msg) && err.msg == "Insufficient history in trajectory."
                 return nothing
             else
                 rethrow(err)
